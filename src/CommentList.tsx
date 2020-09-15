@@ -6,33 +6,27 @@ interface CommentObject {
   comment: string;
 }
 
-interface CommentListObject {
-  comments: CommentObject[];
-  hasError: boolean;
-  isLoading: boolean;
-}
-
 const CommentList: React.FC = () => {
-  const [commentsValue, setCommentsValue] = useState<CommentObject[]>([
-    {
-      id: 1,
-      comment: "comment 1",
-    },
-    {
-      id: 2,
-      comment: "comment 2",
-    },
-    {
-      id: 3,
-      comment: "comment 3",
-    },
-    {
-      id: 4,
-      comment: "comment 4",
-    },
-  ]);
+  const [commentsValue, setCommentsValue] = useState<CommentObject[]>([]);
   const [hasErrorValue, setHasErrorValue] = useState<boolean>(false);
   const [isLoadingValue, setIsLoadingValue] = useState<boolean>(false);
+  const fetchData = (url: string) => {
+    setIsLoadingValue(true);
+    fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          throw Error(response.statusText);
+        }
+        setIsLoadingValue(false);
+        return response;
+      })
+      .then((response) => response.json())
+      .then((comments: CommentObject[]) => setCommentsValue(comments))
+      .catch(() => setHasErrorValue(true));
+  };
+  const componentDidMount = () => {
+    fetchData("https://594ecc215fbb1a00117871a4.mockapi.io/comments");
+  };
   if (hasErrorValue) {
     return <p>error</p>;
   }
@@ -40,11 +34,14 @@ const CommentList: React.FC = () => {
     return <p>loading . . . </p>;
   }
   return (
-    <ul>
-      {commentsValue.map((item) => (
-        <li key={item.id}>{item.comment}</li>
-      ))}
-    </ul>
+    <div>
+      <ul>
+        {commentsValue.map((item) => (
+          <li key={item.id}>{item.comment}</li>
+        ))}
+      </ul>
+      <button onClick={() => componentDidMount()}>fetch</button>
+    </div>
   );
 };
 
